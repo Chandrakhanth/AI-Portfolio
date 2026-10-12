@@ -188,7 +188,7 @@
 
     <section id="hero" class="hero-section">
 
-      <video class="hero-video-art" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+      <video class="hero-video-art" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"
         poster="https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/130837c4-0244-4f37-9c61-8d801d93fd29.jpg"
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260912_104303_0c6d60b2-9353-408e-9449-585108a22fb5.mp4"></video>
 
@@ -206,7 +206,7 @@
 
         <h1 class="hero-title">
           <span id="h1a">Hi, I'm Chandrakhanth</span>
-          <span id="h1b">Architecting High-Throughput <span id="typing-text">Data Platforms</span><span class="typing-cursor">|</span></span>
+          <span id="h1b">Architecting High-Throughput Data Platforms</span>
         </h1>
 
         <p class="hero-sub">
@@ -624,6 +624,13 @@
         c = document.getElementById('hero-canvas');
       if (!v) return;
 
+      // Strictly configure WebKit / iOS autoplay properties
+      v.muted = true;
+      v.defaultMuted = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+
       function activateCanvas() {
         if (c) {
           c.style.display = 'block';
@@ -633,30 +640,45 @@
         }
       }
 
-      function sync() {
+      function attemptPlayVideo() {
         if (q && q.matches) {
           v.pause();
           activateCanvas();
-        } else {
-          var p = v.play();
-          if (p) {
-            p.catch(function () {
-              activateCanvas();
-            });
-          }
+          return;
+        }
+        var p = v.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(function () {
+            // If browser blocks autoplay or low power mode is active, ensure dynamic canvas motion is active
+            activateCanvas();
+          });
         }
       }
 
+      // One-time unlock for mobile browsers (iOS Safari / Android Chrome) on first interaction
+      function unlockMobileVideo() {
+        if (v && v.paused && !(q && q.matches)) {
+          attemptPlayVideo();
+        }
+        window.removeEventListener('touchstart', unlockMobileVideo);
+        window.removeEventListener('pointerdown', unlockMobileVideo);
+        window.removeEventListener('scroll', unlockMobileVideo);
+      }
+      window.addEventListener('touchstart', unlockMobileVideo, { passive: true });
+      window.addEventListener('pointerdown', unlockMobileVideo, { passive: true });
+      window.addEventListener('scroll', unlockMobileVideo, { passive: true });
+
       v.addEventListener('playing', function() {
         v.style.opacity = '1';
+        activateCanvas();
       });
       v.addEventListener('error', function() {
         v.style.display = 'none';
         activateCanvas();
       });
 
-      sync();
-      if (q && q.addEventListener) q.addEventListener('change', sync);
+      attemptPlayVideo();
+      if (q && q.addEventListener) q.addEventListener('change', attemptPlayVideo);
     })();
 
     (function () {

@@ -232,26 +232,7 @@ class FriendlyTerminalAssistant {
   }
 
   renderNLPInspector(meta) {
-    if (!meta || !meta.topMatch) return '';
-    const sampleVec = meta.queryVectorSample && meta.queryVectorSample.length > 0 
-      ? meta.queryVectorSample.map(n => n.toFixed(3)).join(', ') 
-      : '0.000';
-
-    return `
-      <div class="nlp-inspect-wrap">
-        <button type="button" class="nlp-badge-btn" onclick="this.nextElementSibling.classList.toggle('open')">
-          <span>🧠 Vector Similarity Match: <strong>${meta.topMatch.score}%</strong></span>
-          <span>(Click to inspect embedding)</span>
-        </button>
-        <div class="nlp-inspect-panel">
-          <div class="nlp-inspect-row"><strong>1. Tokens Extracted:</strong> [${meta.tokens.map(t => `'${t}'`).join(', ')}]</div>
-          <div class="nlp-inspect-row"><strong>2. Vector Dimensions:</strong> ${meta.vocabularySize}-D Semantic Embedding Space</div>
-          <div class="nlp-inspect-row"><strong>3. Query Embedding Sample:</strong> [${sampleVec}, ...]</div>
-          <div class="nlp-inspect-row"><strong>4. Cosine Similarity Formula:</strong> cos(θ) = (A · B) / (||A|| ||B||) = <strong>${meta.topMatch.rawScore.toFixed(4)}</strong></div>
-          <div class="nlp-inspect-row"><strong>5. Retrieved Knowledge Document:</strong> <code>${meta.topMatch.chunkId}</code> ("${meta.topMatch.title}")</div>
-        </div>
-      </div>
-    `;
+    return '';
   }
 
   printSQLAndPySparkStrength(meta) {
@@ -741,15 +722,13 @@ class FriendlyTerminalAssistant {
   }
 
   printOutOfScopeError(rawCmd, meta) {
-    const topScoreStr = meta && meta.topMatch ? `(Top similarity: ${meta.topMatch.score}%, below 15% threshold)` : '';
-
     this.printHTML(`
       <div class="chat-bubble bot-bubble out-of-scope-error">
         <div class="error-header">
           <span class="error-badge">⚠️ OUT OF SCOPE QUERY [ERROR 404]</span>
         </div>
         <p class="error-message mt-05">
-          The query <code class="error-query">"${this.escapeHTML(rawCmd)}"</code> is outside my verified portfolio knowledge base ${topScoreStr}.
+          The query <code class="error-query">"${this.escapeHTML(rawCmd)}"</code> is outside my verified portfolio knowledge base.
         </p>
         <p class="error-desc text-secondary text-sm mt-05">
           I am Chandrakhanth's dedicated AI Portfolio Assistant. My knowledge engine is strictly restricted to Chandrakhanth's verified professional experience, skills, certifications, and projects.

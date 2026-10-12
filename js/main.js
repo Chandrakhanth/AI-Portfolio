@@ -85,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
   initThemeToggle();
   initNavbarAndAudio();
-  initDynamicTyping();
   initCanvas();
   initAvatar();
   initArchitecture();
@@ -102,6 +101,11 @@ function initApp() {
   const heroVideo = document.querySelector('video.hero-video-art');
   const heroCanvas = document.getElementById('hero-canvas');
   if (heroVideo && heroCanvas) {
+    heroVideo.muted = true;
+    heroVideo.defaultMuted = true;
+    heroVideo.playsInline = true;
+    heroVideo.setAttribute('playsinline', '');
+    heroVideo.setAttribute('webkit-playsinline', '');
     heroVideo.addEventListener('error', () => {
       heroVideo.style.display = 'none';
       heroCanvas.style.display = 'block';
@@ -271,47 +275,7 @@ function initNavbarAndAudio() {
 }
 
 function initDynamicTyping() {
-  const target = document.getElementById('typing-text');
-  if (!target) return;
-
-  const phrases = [
-    "Data Platforms",
-    "PySpark Lakehouses",
-    "Fabric DP-700 Pipelines",
-    "Snowflake Data Marts",
-    "Real-time ETL Streams",
-    "Cloud Architectures"
-  ];
-
-  let phraseIndex = 0;
-  let charIndex = phrases[0].length;
-  let isDeleting = true;
-
-  function type() {
-    const currentPhrase = phrases[phraseIndex];
-    if (isDeleting) {
-      target.textContent = currentPhrase.substring(0, charIndex - 1);
-      charIndex--;
-    } else {
-      target.textContent = currentPhrase.substring(0, charIndex + 1);
-      charIndex++;
-    }
-
-    let speed = isDeleting ? 28 : 45;
-
-    if (!isDeleting && charIndex === currentPhrase.length) {
-      speed = 2200;
-      isDeleting = true;
-    } else if (isDeleting && charIndex === 0) {
-      isDeleting = false;
-      phraseIndex = (phraseIndex + 1) % phrases.length;
-      speed = 300;
-    }
-
-    setTimeout(type, speed);
-  }
-
-  setTimeout(type, 2400);
+  // Static headline: auto-typing disabled
 }
 
 function initCanvas() {
@@ -563,6 +527,9 @@ function closeModal() {
 }
 
 function init3DTilt() {
+  if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    return;
+  }
   const cards = document.querySelectorAll('.tilt-card');
 
   cards.forEach(card => {
