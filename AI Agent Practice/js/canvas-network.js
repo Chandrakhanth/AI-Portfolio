@@ -40,6 +40,7 @@ class CalmAmbientCanvas {
     this.createParticles();
     this.bindEvents();
     this.start();
+    window.addEventListener('load', () => this.handleResize(), { once: true });
   }
 
   handleResize() {
@@ -117,26 +118,45 @@ class CalmAmbientCanvas {
       this.handleResize();
     });
 
-    this.canvas.addEventListener('mousemove', (e) => {
+    const heroSection = document.getElementById('hero') || window;
+    heroSection.addEventListener('mousemove', (e) => {
       const rect = this.canvas.getBoundingClientRect();
-      this.mouse.x = e.clientX - rect.left;
-      this.mouse.y = e.clientY - rect.top;
-    });
+      if (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      ) {
+        this.mouse.x = e.clientX - rect.left;
+        this.mouse.y = e.clientY - rect.top;
+      } else {
+        this.mouse.x = null;
+        this.mouse.y = null;
+      }
+    }, { passive: true });
 
-    this.canvas.addEventListener('mouseleave', () => {
+    heroSection.addEventListener('mouseleave', () => {
       this.mouse.x = null;
       this.mouse.y = null;
     });
 
-    this.canvas.addEventListener('click', (e) => {
+    heroSection.addEventListener('click', (e) => {
+      if (e.target && e.target.closest('a, button, input, textarea')) return;
       const rect = this.canvas.getBoundingClientRect();
-      this.ripples.push({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-        radius: 5,
-        maxRadius: 160,
-        opacity: 0.6
-      });
+      if (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      ) {
+        this.ripples.push({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+          radius: 6,
+          maxRadius: 180,
+          opacity: 0.7
+        });
+      }
     });
 
     if ('IntersectionObserver' in window) {

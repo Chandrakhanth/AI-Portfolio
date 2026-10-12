@@ -27,6 +27,7 @@
     href="https://fonts.googleapis.com/css2?family=Sora:wght@100..900&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet" />
 
+  <link rel="stylesheet" href="styles/chillax.css" />
   <link rel="stylesheet" href="styles/main.css" />
 </head>
 
@@ -192,8 +193,9 @@
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260912_104303_0c6d60b2-9353-408e-9449-585108a22fb5.mp4"></video>
 
       <div class="hero-video-veil" aria-hidden="true"></div>
+      <div class="hero-ambient-glow" aria-hidden="true"></div>
 
-      <canvas id="hero-canvas" class="hero-canvas" style="display:none;"></canvas>
+      <canvas id="hero-canvas" class="hero-canvas"></canvas>
 
       <div class="hero-center-stage">
 
@@ -204,7 +206,7 @@
 
         <h1 class="hero-title">
           <span id="h1a">Hi, I'm Chandrakhanth</span>
-          <span id="h1b">Architecting High-Throughput Data Platforms.</span>
+          <span id="h1b">Architecting High-Throughput <span id="typing-text">Data Platforms</span><span class="typing-cursor">|</span></span>
         </h1>
 
         <p class="hero-sub">
@@ -417,7 +419,7 @@
                   <div class="voice-bubble-text-wrap">
                     <span class="voice-bubble-speech">"Welcome to my portfolio. I’m an AI assistant designed to help you
                       explore my experience, projects, and technical expertise."</span>
-
+                    <span class="voice-bubble-hint" id="voice-bubble-hint">▶ Click to listen (AI Voice)</span>
                   </div>
                   <div class="sound-wave-bars" id="avatar-sound-wave" aria-hidden="true">
                     <span></span><span></span><span></span><span></span>
@@ -618,33 +620,57 @@
   <script>
     (function () {
       var q = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)'),
-        v = document.querySelector('video.hero-video-art');
-      if (!q || !v) return;
-      function sync() {
-        if (q.matches) {
-          v.pause();
-        } else {
-          var p = v.play();
-          if (p) p.catch(function () { });
+        v = document.querySelector('video.hero-video-art'),
+        c = document.getElementById('hero-canvas');
+      if (!v) return;
+
+      function activateCanvas() {
+        if (c) {
+          c.style.display = 'block';
+          if (window.portfolioCanvas && typeof window.portfolioCanvas.handleResize === 'function') {
+            window.portfolioCanvas.handleResize();
+          }
         }
       }
+
+      function sync() {
+        if (q && q.matches) {
+          v.pause();
+          activateCanvas();
+        } else {
+          var p = v.play();
+          if (p) {
+            p.catch(function () {
+              activateCanvas();
+            });
+          }
+        }
+      }
+
+      v.addEventListener('playing', function() {
+        v.style.opacity = '1';
+      });
+      v.addEventListener('error', function() {
+        v.style.display = 'none';
+        activateCanvas();
+      });
+
       sync();
-      q.addEventListener ? q.addEventListener('change', sync) : q.addListener(sync);
+      if (q && q.addEventListener) q.addEventListener('change', sync);
     })();
 
     (function () {
-      var lastItem = document.querySelector('.hero-scroll-cue') || document.querySelector('.feats li:last-child');
       function done() {
         document.documentElement.classList.add('is-entered');
       }
+      var lastItem = document.querySelector('.feats li:last-child') || document.querySelector('.hero-title');
       if (lastItem) {
         lastItem.addEventListener('animationend', done, { once: true });
-        setTimeout(done, 3500);
+        setTimeout(done, 1200);
       } else {
-        setTimeout(done, 1500);
+        setTimeout(done, 500);
       }
     })();
-
   </script>
 </body>
 

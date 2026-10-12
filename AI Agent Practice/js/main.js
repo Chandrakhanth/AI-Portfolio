@@ -201,6 +201,9 @@ function initNavbarAndAudio() {
     audioToggleBtn.addEventListener('click', () => {
       sfx.toggle();
       updateAudioIcon();
+      if (!sfx.enabled && window.digitalHuman) {
+        window.digitalHuman.stopSpeaking();
+      }
     });
   }
 
@@ -272,7 +275,7 @@ function initDynamicTyping() {
   if (!target) return;
 
   const phrases = [
-    "Modern Data Platforms",
+    "Data Platforms",
     "PySpark Lakehouses",
     "Fabric DP-700 Pipelines",
     "Snowflake Data Marts",
@@ -281,8 +284,8 @@ function initDynamicTyping() {
   ];
 
   let phraseIndex = 0;
-  let charIndex = 0;
-  let isDeleting = false;
+  let charIndex = phrases[0].length;
+  let isDeleting = true;
 
   function type() {
     const currentPhrase = phrases[phraseIndex];
@@ -294,21 +297,21 @@ function initDynamicTyping() {
       charIndex++;
     }
 
-    let speed = isDeleting ? 18 : 36;
+    let speed = isDeleting ? 28 : 45;
 
     if (!isDeleting && charIndex === currentPhrase.length) {
-      speed = 1300;
+      speed = 2200;
       isDeleting = true;
     } else if (isDeleting && charIndex === 0) {
       isDeleting = false;
       phraseIndex = (phraseIndex + 1) % phrases.length;
-      speed = 200;
+      speed = 300;
     }
 
     setTimeout(type, speed);
   }
 
-  setTimeout(type, 200);
+  setTimeout(type, 2400);
 }
 
 function initCanvas() {

@@ -206,7 +206,7 @@
 
         <h1 class="hero-title">
           <span id="h1a">Hi, I'm Chandrakhanth</span>
-          <span id="h1b">Architecting High-Throughput Data Platforms.</span>
+          <span id="h1b">Architecting High-Throughput <span id="typing-text">Data Platforms</span><span class="typing-cursor">|</span></span>
         </h1>
 
         <p class="hero-sub">
@@ -620,33 +620,57 @@
   <script>
     (function () {
       var q = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)'),
-        v = document.querySelector('video.hero-video-art');
-      if (!q || !v) return;
-      function sync() {
-        if (q.matches) {
-          v.pause();
-        } else {
-          var p = v.play();
-          if (p) p.catch(function () { });
+        v = document.querySelector('video.hero-video-art'),
+        c = document.getElementById('hero-canvas');
+      if (!v) return;
+
+      function activateCanvas() {
+        if (c) {
+          c.style.display = 'block';
+          if (window.portfolioCanvas && typeof window.portfolioCanvas.handleResize === 'function') {
+            window.portfolioCanvas.handleResize();
+          }
         }
       }
+
+      function sync() {
+        if (q && q.matches) {
+          v.pause();
+          activateCanvas();
+        } else {
+          var p = v.play();
+          if (p) {
+            p.catch(function () {
+              activateCanvas();
+            });
+          }
+        }
+      }
+
+      v.addEventListener('playing', function() {
+        v.style.opacity = '1';
+      });
+      v.addEventListener('error', function() {
+        v.style.display = 'none';
+        activateCanvas();
+      });
+
       sync();
-      q.addEventListener ? q.addEventListener('change', sync) : q.addListener(sync);
+      if (q && q.addEventListener) q.addEventListener('change', sync);
     })();
 
     (function () {
-      var lastItem = document.querySelector('.hero-scroll-cue') || document.querySelector('.feats li:last-child');
       function done() {
         document.documentElement.classList.add('is-entered');
       }
+      var lastItem = document.querySelector('.feats li:last-child') || document.querySelector('.hero-title');
       if (lastItem) {
         lastItem.addEventListener('animationend', done, { once: true });
-        setTimeout(done, 3500);
+        setTimeout(done, 1200);
       } else {
-        setTimeout(done, 1500);
+        setTimeout(done, 500);
       }
     })();
-
   </script>
 </body>
 

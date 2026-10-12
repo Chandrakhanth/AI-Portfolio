@@ -1,12 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..900&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-
-@font-face {
-  font-family: 'Sora';
-  src: url('https://fonts.gstatic.com/s/sora/v17/xMQbuFFYT72XzQUpDg.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
+@import url('chillax.css');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
   --bg-base: #060810;
@@ -55,8 +48,8 @@
   --glow: calc(var(--u) * 34);
   --hairline: max(1px, calc(var(--u) * 1.6));
 
-  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Chillax', 'Chillax-Bold', 'Chillax-Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Chillax', 'Chillax-Regular', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.05);
@@ -105,6 +98,7 @@
   --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
   --shadow-elevated: 0 20px 35px -10px rgba(15, 23, 42, 0.12);
   --shadow-soft: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --veil: 248, 250, 252;
 }
 
 *, *::before, *::after {
@@ -189,6 +183,7 @@ h1, h2, h3, h4, h5, h6 {
 .gradient-text {
   background: var(--grad-primary);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -751,6 +746,27 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.hero-ambient-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+  width: 780px;
+  max-width: 92vw;
+  height: 480px;
+  background: radial-gradient(ellipse at center, rgba(0, 240, 255, 0.16) 0%, rgba(99, 102, 241, 0.12) 38%, rgba(16, 185, 129, 0.08) 65%, transparent 75%);
+  filter: blur(65px);
+  pointer-events: none;
+  z-index: 1;
+  animation: heroAuroraFloat 10s ease-in-out infinite alternate;
+}
+
+@keyframes heroAuroraFloat {
+  0% { transform: translate(-50%, -30%) scale(0.95); opacity: 0.65; }
+  50% { transform: translate(-48%, -34%) scale(1.08) rotate(3deg); opacity: 0.95; }
+  100% { transform: translate(-52%, -28%) scale(1.02) rotate(-3deg); opacity: 0.75; }
+}
+
 .hero-canvas {
   position: absolute;
   top: 0;
@@ -759,6 +775,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 100%;
   pointer-events: none;
   z-index: 1;
+  opacity: 0.88;
 }
 
 .hero-center-stage {
@@ -810,12 +827,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero-title {
-  font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  font-family: 'Chillax', 'Chillax-Bold', var(--font-heading);
   font-size: clamp(2.2rem, 3.9vw, 3.7rem);
   line-height: 1.15;
   margin-bottom: 1.25rem;
   color: var(--ink);
-  font-weight: 400;
+  font-weight: 700;
   text-wrap: balance;
 }
 
@@ -824,24 +841,41 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #h1a {
-  font-variation-settings: 'wght' 450;
+  font-family: 'Chillax', 'Chillax-Medium', var(--font-heading);
+  font-variation-settings: 'wght' 500;
   color: #ffffff;
   letter-spacing: 0.01em;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
 }
 
 #h1b {
-  font-variation-settings: 'wght' 550;
+  font-family: 'Chillax', 'Chillax-Bold', var(--font-heading);
+  font-variation-settings: 'wght' 700;
   background: linear-gradient(135deg, #ffffff 0%, #38bdf8 30%, #00f0ff 65%, #a855f7 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: #38bdf8;
   letter-spacing: -0.02em;
   filter: drop-shadow(0 0 28px rgba(0, 240, 255, 0.28));
   margin-top: 0.25rem;
 }
 
+.typing-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--accent-cyan);
+  font-weight: 300;
+  animation: typingBlink 1s infinite;
+}
+
+@keyframes typingBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .hero-sub {
-  font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  font-family: 'Chillax', 'Chillax-Regular', var(--font-body);
   font-size: clamp(1.02rem, 1.35vw, 1.22rem);
   line-height: 1.55;
   color: #cbd5e1;
@@ -856,7 +890,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #sub1, #sub2 {
-  font-variation-settings: 'wght' 446;
+  font-family: 'Chillax', 'Chillax-Light', var(--font-body);
+  font-variation-settings: 'wght' 350;
   color: #cbd5e1;
 }
 
@@ -1064,39 +1099,70 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  :root {
-    --ent-line: cubic-bezier(.16, 1, .3, 1);
-    --ent-soft: cubic-bezier(.25, .8, .35, 1);
-    --rise: 9px;
+  @keyframes heroFadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  @keyframes en-wipe {
-    from { clip-path: inset(-.78em 0 calc(100% + .78em) 0); translate: 0 var(--rise); }
-    to { clip-path: inset(-.78em 0 -.78em 0); translate: 0 0; }
+  @keyframes heroTitleSlide {
+    0% {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  @keyframes en-lift {
-    from { opacity: 0; translate: 0 var(--rise); }
-    to { opacity: 1; translate: 0 0; }
+  @keyframes heroDrawRule {
+    0% { transform: scaleY(0); opacity: 0; }
+    100% { transform: scaleY(1); opacity: 1; }
   }
 
-  @keyframes en-draw {
-    from { transform: scaleY(0); }
-    to { transform: scaleY(1); }
+  .hero-status-pill {
+    animation: heroFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
   }
-
-  html:not(.is-entered) .hero-status-pill { animation: en-lift .60s var(--ent-soft) .15s backwards; }
-  html:not(.is-entered) #h1a { animation: en-wipe .95s var(--ent-line) .34s backwards; }
-  html:not(.is-entered) #h1b { animation: en-wipe .95s var(--ent-line) .44s backwards; }
-  html:not(.is-entered) #sub1 { animation: en-lift .70s var(--ent-soft) .74s backwards; }
-  html:not(.is-entered) #sub2 { animation: en-lift .70s var(--ent-soft) .80s backwards; }
-  html:not(.is-entered) .cta { animation: en-lift .80s var(--ent-line) .94s backwards; }
-  html:not(.is-entered) .hero-glass-pill { animation: en-lift .70s var(--ent-soft) 1.02s backwards; }
-  html:not(.is-entered) .feats li:nth-child(1) { animation: en-lift .60s var(--ent-soft) 1.08s backwards; }
-  html:not(.is-entered) .feats li:nth-child(2) { animation: en-lift .60s var(--ent-soft) 1.15s backwards; }
-  html:not(.is-entered) .feats li:nth-child(3) { animation: en-lift .60s var(--ent-soft) 1.22s backwards; }
-  html:not(.is-entered) .feats li:nth-child(4) { animation: en-lift .60s var(--ent-soft) 1.29s backwards; }
-  html:not(.is-entered) .rule { animation: en-draw .55s var(--ent-line) 1.34s backwards; transform-origin: top; }
+  #h1a {
+    animation: heroTitleSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
+  }
+  #h1b {
+    animation: heroTitleSlide 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both;
+  }
+  #sub1 {
+    animation: heroFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.62s both;
+  }
+  #sub2 {
+    animation: heroFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.74s both;
+  }
+  .cta {
+    animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.88s both;
+  }
+  .hero-glass-pill {
+    animation: heroFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.98s both;
+  }
+  .feats li:nth-child(1) {
+    animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.05s both;
+  }
+  .feats li:nth-child(2) {
+    animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.12s both;
+  }
+  .feats li:nth-child(3) {
+    animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.19s both;
+  }
+  .feats li:nth-child(4) {
+    animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.26s both;
+  }
+  .rule {
+    animation: heroDrawRule 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.34s both;
+    transform-origin: top;
+  }
 }
 
 .terminal-showcase-grid {
@@ -1746,6 +1812,7 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

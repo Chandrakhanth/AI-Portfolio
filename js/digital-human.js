@@ -87,16 +87,19 @@ class DigitalHumanController {
     }, { passive: true });
 
     if (this.floatingDock) {
-      this.floatingDock.addEventListener('click', () => {
+      this.floatingDock.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.playSfx) window.playSfx('click');
+        if (!this.isSpeaking) {
+          this.speakGreeting(false);
+        } else {
+          this.stopSpeaking();
+        }
         const terminalEl = document.getElementById('terminal');
         if (terminalEl) {
           terminalEl.scrollIntoView({ behavior: 'smooth' });
           const input = document.getElementById('chat-input');
-          if (input) setTimeout(() => input.focus(), 600);
-        }
-        if (window.playSfx) window.playSfx('click');
-        if (!this.isSpeaking) {
-          setTimeout(() => this.speakGreeting(false), 400);
+          if (input) setTimeout(() => input.focus(), 500);
         }
       });
     }
@@ -104,18 +107,17 @@ class DigitalHumanController {
     // Connect Hero CTA pill to AI Assistant Voice
     const heroAiCta = document.getElementById('hero-cta-terminal');
     if (heroAiCta) {
-      heroAiCta.addEventListener('click', (e) => {
+      heroAiCta.addEventListener('click', () => {
+        if (!this.isSpeaking) {
+          this.speakGreeting(false);
+        }
         const terminalEl = document.getElementById('terminal');
         if (terminalEl) {
-          e.preventDefault();
           terminalEl.scrollIntoView({ behavior: 'smooth' });
           setTimeout(() => {
             const input = document.getElementById('chat-input');
             if (input) input.focus();
-            if (!this.isSpeaking) {
-              this.speakGreeting(false);
-            }
-          }, 500);
+          }, 400);
         }
       });
     }
@@ -127,6 +129,11 @@ class DigitalHumanController {
 
     this.populateVoices();
 
+    if (typeof this.synth.addEventListener === 'function') {
+      this.synth.addEventListener('voiceschanged', () => {
+        this.populateVoices();
+      });
+    }
     if (typeof this.synth.onvoiceschanged !== 'undefined') {
       this.synth.onvoiceschanged = () => {
         this.populateVoices();
@@ -135,6 +142,7 @@ class DigitalHumanController {
   }
 
   populateVoices() {
+    if (!this.synth) this.synth = window.speechSynthesis;
     if (!this.synth) return;
     const allVoices = this.synth.getVoices();
     if (!allVoices || allVoices.length === 0) return;
@@ -172,23 +180,15 @@ class DigitalHumanController {
   }
 
   /**
-   * Production-grade auto-greeting on website load:
-   * 1. Attempts direct auto-play speech shortly after page load.
-   * 2. If the browser blocks 0-click audio autoplay, automatically falls back
-   *    to the very first interaction (any click, tap, scroll, or key press).
+   * Listen for first explicit user gesture (click, tap, key) to unlock audio context smoothly
    */
   scheduleAutoGreeting() {
     if (this.hasSpokenGreeting) return;
 
-    // Direct auto-play attempt after entrance animations start (600ms)
-    setTimeout(() => {
-      if (!this.hasSpokenGreeting && !this.isSpeaking) {
-        this.speakGreeting(true);
+    const fallbackHandler = (e) => {
+      if (e && e.target && e.target.closest('a, button, input, textarea')) {
+        return;
       }
-    }, 600);
-
-    // Guaranteed fallback: triggers on first user interaction if 0-click autoplay was blocked
-    const fallbackHandler = () => {
       if (!this.hasSpokenGreeting && !this.isSpeaking) {
         this.speakGreeting(false);
       }
@@ -196,9 +196,9 @@ class DigitalHumanController {
     };
 
     this.fallbackHandler = fallbackHandler;
-    this.fallbackEvents = ['click', 'pointerdown', 'keydown', 'scroll', 'touchstart'];
+    this.fallbackEvents = ['click', 'pointerdown', 'keydown', 'touchstart'];
     this.fallbackEvents.forEach(evt => {
-      window.addEventListener(evt, this.fallbackHandler, { once: true, passive: true });
+      window.addEventListener(evt, this.fallbackHandler, { once: true });
     });
   }
 
@@ -218,14 +218,16 @@ class DigitalHumanController {
   }
 
   speakGreeting(isAutoPlay = false) {
+    this.speak(this.greetingText, isAutoPlay);
+  }
+
+  speak(text, isAutoPlay = false) {
     if (!this.synth) {
       this.synth = window.speechSynthesis;
     }
 
-    if (!this.synth) return;
-
-    // Respect user mute setting if explicitly toggled off
-    if (window.sfx && window.sfx.enabled === false && !isAutoPlay) {
+    if (!this.synth) {
+      console.warn('Speech synthesis not available in this browser');
       return;
     }
 
@@ -235,18 +237,21 @@ class DigitalHumanController {
     }
 
     try {
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
       this.synth.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(this.greetingText);
+      const utterance = new SpeechSynthesisUtterance(text);
       this.activeUtterance = utterance;
       window._activeSpeechUtterance = utterance; // Prevent garbage collection in Chromium
 
-      if (!this.preferredVoice) this.populateVoices();
+      this.populateVoices();
       if (this.preferredVoice) {
         utterance.voice = this.preferredVoice;
       }
 
-      utterance.rate = 1.02;
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
 
@@ -278,8 +283,7 @@ class DigitalHumanController {
       utterance.onerror = (err) => {
         const errType = err && err.error ? err.error : '';
         if (errType === 'not-allowed') {
-          // Browser security policy required an initial user gesture - fallback listener handles it
-          console.log('Autoplay audio policy deferred until first user interaction.');
+          console.log('Audio policy requires user gesture.');
         } else {
           console.log('Speech synthesis ended:', errType);
         }
@@ -287,26 +291,21 @@ class DigitalHumanController {
         this.stopSpeaking();
       };
 
-      // Periodic keep-alive loop for Chromium long speech bug
+      // Periodic keep-alive loop for Chromium long speech bug (>15s pause)
       if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
       this.keepAliveInterval = setInterval(() => {
         if (!this.synthSpeaking || !this.isSpeaking) {
           clearInterval(this.keepAliveInterval);
-        } else if (this.synth.paused) {
+        } else if (this.synth && this.synth.paused) {
           this.synth.resume();
         }
-      }, 1500);
+      }, 1200);
 
-      // 60ms delay after cancel() for Chromium audio pipeline reset
-      setTimeout(() => {
-        try {
-          this.synth.speak(utterance);
-          if (this.synth.paused) this.synth.resume();
-        } catch (e) {
-          console.warn('Speech synthesis speak error:', e);
-          this.stopSpeaking();
-        }
-      }, 60);
+      // Execute speak synchronously to preserve user activation context
+      this.synth.speak(utterance);
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
 
     } catch (err) {
       console.warn('Speech synthesis exception:', err);
@@ -331,6 +330,9 @@ class DigitalHumanController {
     if (this.synth) {
       try {
         this.synth.cancel();
+        if (this.synth.paused) {
+          this.synth.resume();
+        }
       } catch (e) {}
     }
 

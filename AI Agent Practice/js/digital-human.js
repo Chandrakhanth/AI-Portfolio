@@ -9,11 +9,15 @@ class DigitalHumanController {
     this.voiceBtn = document.getElementById('avatar-voice-btn');
     this.soundWave = document.getElementById('avatar-sound-wave');
     this.floatingDock = document.getElementById('floating-avatar-dock');
+    this.voiceHint = document.getElementById('voice-bubble-hint');
 
     this.isSpeaking = false;
     this.synthSpeaking = false;
-    this.hasSpokenOnce = false;
-    this.greetingText = "Welcome to my portfolio. I’m an AI assistant designed to help you explore my experience, projects, and technical expertise.";
+    this.hasSpokenGreeting = false;
+    this.activeUtterance = null;
+    this.preferredVoice = null;
+    this.keepAliveInterval = null;
+    this.greetingText = "Welcome to my portfolio! I'm an AI assistant designed to help you explore my data engineering experience, projects, and technical certifications.";
 
     this.mouseX = 0;
     this.mouseY = 0;
@@ -30,10 +34,11 @@ class DigitalHumanController {
     this.initSpeechEngine();
     this.startBlinkCycle();
     this.startGazeTrackingLoop();
+    this.scheduleAutoGreeting();
   }
 
   bindEvents() {
-    
+    // 3D Parallax Tilt with Mouse
     window.addEventListener('mousemove', (e) => {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
@@ -45,19 +50,31 @@ class DigitalHumanController {
       this.targetRotX = -this.mouseY * 4.5;
     }, { passive: true });
 
+    // Interactive Card Click toggles Voice
     if (this.card) {
-      this.card.addEventListener('click', () => {
-        this.speakGreeting();
+      this.card.addEventListener('click', (e) => {
+        if (e.target.closest('.avatar-chip')) return;
+        this.toggleVoiceGreeting();
       });
     }
 
+    // Direct Voice Button Click
     if (this.voiceBtn) {
       this.voiceBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.speakGreeting();
+        this.toggleVoiceGreeting();
       });
     }
 
+    // Voice Bubble Click
+    if (this.voiceBubble) {
+      this.voiceBubble.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleVoiceGreeting();
+      });
+    }
+
+    // Floating Avatar Dock at page scroll
     window.addEventListener('scroll', () => {
       const scrollY = window.pageYOffset || document.documentElement.scrollTop;
       if (this.floatingDock) {
@@ -70,104 +87,260 @@ class DigitalHumanController {
     }, { passive: true });
 
     if (this.floatingDock) {
-      this.floatingDock.addEventListener('click', () => {
+      this.floatingDock.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.playSfx) window.playSfx('click');
+        if (!this.isSpeaking) {
+          this.speakGreeting(false);
+        } else {
+          this.stopSpeaking();
+        }
         const terminalEl = document.getElementById('terminal');
         if (terminalEl) {
           terminalEl.scrollIntoView({ behavior: 'smooth' });
           const input = document.getElementById('chat-input');
-          if (input) setTimeout(() => input.focus(), 600);
+          if (input) setTimeout(() => input.focus(), 500);
         }
-        if (window.playSfx) window.playSfx('click');
       });
     }
 
-    const firstGestureHandler = () => {
-      if (!this.hasSpokenOnce) {
-        this.speakGreeting();
-      }
-      window.removeEventListener('click', firstGestureHandler);
-    };
-    window.addEventListener('click', firstGestureHandler, { once: true });
+    // Connect Hero CTA pill to AI Assistant Voice
+    const heroAiCta = document.getElementById('hero-cta-terminal');
+    if (heroAiCta) {
+      heroAiCta.addEventListener('click', () => {
+        if (!this.isSpeaking) {
+          this.speakGreeting(false);
+        }
+        const terminalEl = document.getElementById('terminal');
+        if (terminalEl) {
+          terminalEl.scrollIntoView({ behavior: 'smooth' });
+          setTimeout(() => {
+            const input = document.getElementById('chat-input');
+            if (input) input.focus();
+          }, 400);
+        }
+      });
+    }
   }
 
   initSpeechEngine() {
     this.synth = window.speechSynthesis;
-    if (this.synth && typeof this.synth.onvoiceschanged !== 'undefined') {
-      this.synth.onvoiceschanged = () => {
-        
-      };
-    }
-
-    setTimeout(() => {
-      this.speakGreeting();
-    }, 400);
-  }
-
-  speakGreeting() {
-    this.hasSpokenOnce = true;
-    this.isSpeaking = true;
-
-    if (this.voiceBubble) this.voiceBubble.classList.add('speaking');
-    if (this.soundWave) this.soundWave.classList.add('active');
-    if (this.lipSyncOverlay) this.lipSyncOverlay.classList.add('active');
-
-    clearTimeout(this.speechTimer);
-    this.speechTimer = setTimeout(() => {
-      if (!this.synthSpeaking) {
-        this.stopSpeaking();
-      }
-    }, 2800);
-
     if (!this.synth) return;
 
+    this.populateVoices();
+
+    if (typeof this.synth.addEventListener === 'function') {
+      this.synth.addEventListener('voiceschanged', () => {
+        this.populateVoices();
+      });
+    }
+    if (typeof this.synth.onvoiceschanged !== 'undefined') {
+      this.synth.onvoiceschanged = () => {
+        this.populateVoices();
+      };
+    }
+  }
+
+  populateVoices() {
+    if (!this.synth) this.synth = window.speechSynthesis;
+    if (!this.synth) return;
+    const allVoices = this.synth.getVoices();
+    if (!allVoices || allVoices.length === 0) return;
+
+    // Prioritize natural neural voices across Windows, Edge, Chrome, Apple
+    const naturalPriority = [
+      'guy online (natural)',
+      'jenny online (natural)',
+      'stefan online (natural)',
+      'christopher online (natural)',
+      'google us english',
+      'google uk english male',
+      'daniel',
+      'samantha',
+      'karen'
+    ];
+
+    let found = null;
+    for (const name of naturalPriority) {
+      found = allVoices.find(v => v.name.toLowerCase().includes(name));
+      if (found) break;
+    }
+
+    if (!found) {
+      found = allVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Online')));
+    }
+    if (!found) {
+      found = allVoices.find(v => v.lang.startsWith('en') && !v.name.toLowerCase().includes('desktop'));
+    }
+    if (!found) {
+      found = allVoices.find(v => v.lang.startsWith('en')) || allVoices[0];
+    }
+
+    this.preferredVoice = found;
+  }
+
+  /**
+   * Listen for first explicit user gesture (click, tap, key) to unlock audio context smoothly
+   */
+  scheduleAutoGreeting() {
+    if (this.hasSpokenGreeting) return;
+
+    const fallbackHandler = (e) => {
+      if (e && e.target && e.target.closest('a, button, input, textarea')) {
+        return;
+      }
+      if (!this.hasSpokenGreeting && !this.isSpeaking) {
+        this.speakGreeting(false);
+      }
+      this.cleanupFallbackListeners();
+    };
+
+    this.fallbackHandler = fallbackHandler;
+    this.fallbackEvents = ['click', 'pointerdown', 'keydown', 'touchstart'];
+    this.fallbackEvents.forEach(evt => {
+      window.addEventListener(evt, this.fallbackHandler, { once: true });
+    });
+  }
+
+  cleanupFallbackListeners() {
+    if (!this.fallbackHandler || !this.fallbackEvents) return;
+    this.fallbackEvents.forEach(evt => {
+      window.removeEventListener(evt, this.fallbackHandler);
+    });
+  }
+
+  toggleVoiceGreeting() {
+    if (this.isSpeaking) {
+      this.stopSpeaking();
+    } else {
+      this.speakGreeting(false);
+    }
+  }
+
+  speakGreeting(isAutoPlay = false) {
+    this.speak(this.greetingText, isAutoPlay);
+  }
+
+  speak(text, isAutoPlay = false) {
+    if (!this.synth) {
+      this.synth = window.speechSynthesis;
+    }
+
+    if (!this.synth) {
+      console.warn('Speech synthesis not available in this browser');
+      return;
+    }
+
+    if (this.isSpeaking) {
+      this.stopSpeaking();
+      return;
+    }
+
     try {
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
       this.synth.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(this.greetingText);
-      utterance.rate = 1.08;
-      utterance.pitch = 1.02;
+      const utterance = new SpeechSynthesisUtterance(text);
+      this.activeUtterance = utterance;
+      window._activeSpeechUtterance = utterance; // Prevent garbage collection in Chromium
 
-      const voices = this.synth.getVoices();
-      const preferredVoice = voices.find(v => (v.lang.includes('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Male')))) || voices.find(v => v.lang.startsWith('en'));
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      this.populateVoices();
+      if (this.preferredVoice) {
+        utterance.voice = this.preferredVoice;
       }
+
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
 
       utterance.onstart = () => {
         this.synthSpeaking = true;
         this.isSpeaking = true;
+        this.hasSpokenGreeting = true;
+        this.cleanupFallbackListeners();
+
+        if (this.voiceBubble) this.voiceBubble.classList.add('speaking');
+        if (this.soundWave) this.soundWave.classList.add('active');
+        if (this.lipSyncOverlay) this.lipSyncOverlay.classList.add('active');
+        if (this.voiceBtn) this.voiceBtn.innerHTML = '⏸️';
+        if (this.voiceHint) this.voiceHint.textContent = '⏸ Click to pause';
       };
 
       utterance.onboundary = () => {
         if (this.lipSyncOverlay) {
-          this.lipSyncOverlay.style.setProperty('--lip-pulse', (0.7 + Math.random() * 0.5).toFixed(2));
+          const pulse = (0.75 + Math.random() * 0.45).toFixed(2);
+          this.lipSyncOverlay.style.setProperty('--lip-pulse', pulse);
         }
       };
 
       utterance.onend = () => {
-        this.synthSpeaking = false;
+        this.activeUtterance = null;
         this.stopSpeaking();
       };
 
       utterance.onerror = (err) => {
-        this.synthSpeaking = false;
-        console.log('Speech synthesis event:', err.error || err);
+        const errType = err && err.error ? err.error : '';
+        if (errType === 'not-allowed') {
+          console.log('Audio policy requires user gesture.');
+        } else {
+          console.log('Speech synthesis ended:', errType);
+        }
+        this.activeUtterance = null;
+        this.stopSpeaking();
       };
 
+      // Periodic keep-alive loop for Chromium long speech bug (>15s pause)
+      if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = setInterval(() => {
+        if (!this.synthSpeaking || !this.isSpeaking) {
+          clearInterval(this.keepAliveInterval);
+        } else if (this.synth && this.synth.paused) {
+          this.synth.resume();
+        }
+      }, 1200);
+
+      // Execute speak synchronously to preserve user activation context
       this.synth.speak(utterance);
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
+
     } catch (err) {
-      console.log('Speech synthesis exception:', err);
+      console.warn('Speech synthesis exception:', err);
+      this.stopSpeaking();
     }
 
-    if (window.playSfx) window.playSfx('blip');
+    if (!isAutoPlay && window.playSfx) {
+      window.playSfx('blip');
+    }
   }
 
   stopSpeaking() {
     this.isSpeaking = false;
     this.synthSpeaking = false;
+    this.activeUtterance = null;
+
+    if (this.keepAliveInterval) {
+      clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = null;
+    }
+
+    if (this.synth) {
+      try {
+        this.synth.cancel();
+        if (this.synth.paused) {
+          this.synth.resume();
+        }
+      } catch (e) {}
+    }
+
     if (this.voiceBubble) this.voiceBubble.classList.remove('speaking');
     if (this.soundWave) this.soundWave.classList.remove('active');
     if (this.lipSyncOverlay) this.lipSyncOverlay.classList.remove('active');
+    if (this.voiceBtn) this.voiceBtn.innerHTML = '🔊';
+    if (this.voiceHint) this.voiceHint.textContent = '▶ Click to listen (AI Voice)';
   }
 
   startBlinkCycle() {
@@ -176,19 +349,18 @@ class DigitalHumanController {
         this.eyeBlinkOverlay.classList.add('blinking');
         setTimeout(() => {
           this.eyeBlinkOverlay.classList.remove('blinking');
-        }, 160); 
+        }, 160);
       }
 
-      const nextBlinkDelay = 3500 + Math.random() * 2200;
+      const nextBlinkDelay = 3500 + Math.random() * 2500;
       setTimeout(triggerBlink, nextBlinkDelay);
     };
 
-    setTimeout(triggerBlink, 2800);
+    setTimeout(triggerBlink, 2200);
   }
 
   startGazeTrackingLoop() {
     const updateGaze = () => {
-      
       this.currentRotX += (this.targetRotX - this.currentRotX) * 0.08;
       this.currentRotY += (this.targetRotY - this.currentRotY) * 0.08;
 

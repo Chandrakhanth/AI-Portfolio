@@ -40,6 +40,7 @@ class CalmAmbientCanvas {
     this.createParticles();
     this.bindEvents();
     this.start();
+    window.addEventListener('load', () => this.handleResize(), { once: true });
   }
 
   handleResize() {
