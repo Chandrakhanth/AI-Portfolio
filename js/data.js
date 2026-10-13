@@ -7,6 +7,9 @@ const PORTFOLIO_DATA = {
     greeting: "Hey there! I'm Chandrakhanth 👋",
     tagline: "Architecting resilient, high-throughput data platforms with MS SQL Server, Python, PySpark, Microsoft Fabric, Snowflake, and Databricks.",
     bio: "Data Engineering professional proficient in architecting end-to-end data platforms, distributed data processing, and cloud lakehouses. Proficient in MS SQL Server, Python, PySpark, Microsoft Fabric (DP-700 Certified), Snowflake, and Databricks, I deliver dependable analytics from raw ingestion to executive BI marts.",
+    shortBio: "Data Engineering Professional at Systech Solutions, Inc. with ~2+ years of production experience architecting end-to-end data platforms, Microsoft Fabric lakehouses, PySpark pipelines, and Snowflake data marts.",
+    totalExperience: "2+ Years of progressive production engineering experience across Enterprise Data Pipelines, Distributed PySpark Compute, and Full-Stack Software Development.",
+    experienceYears: "2+ Years",
     location: "Chennai, India (Open to Remote)",
     status: "Open to high-impact Data Engineering & Analytics opportunities",
     email: "chandrakhanth07@gmail.com",
@@ -301,6 +304,9 @@ const PORTFOLIO_DATA = {
   ]
 };
 
+if (typeof window !== 'undefined') {
+  window.PORTFOLIO_DATA = PORTFOLIO_DATA;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = PORTFOLIO_DATA;
 }

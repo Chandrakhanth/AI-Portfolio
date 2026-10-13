@@ -15,12 +15,12 @@ class FriendlyTerminalAssistant {
     this.bindEvents();
     this.printGreeting();
 
-    if (typeof NLPEngine !== 'undefined' && typeof PORTFOLIO_DATA !== 'undefined') {
-      this.nlpEngine = new NLPEngine();
-      this.nlpEngine.initialize(PORTFOLIO_DATA);
-    } else if (typeof window !== 'undefined' && window.NLPEngine && typeof PORTFOLIO_DATA !== 'undefined') {
-      this.nlpEngine = new window.NLPEngine();
-      this.nlpEngine.initialize(PORTFOLIO_DATA);
+    const data = (typeof PORTFOLIO_DATA !== 'undefined' ? PORTFOLIO_DATA : (typeof window !== 'undefined' ? window.PORTFOLIO_DATA : null));
+    const EngineClass = (typeof NLPEngine !== 'undefined' ? NLPEngine : (typeof window !== 'undefined' ? window.NLPEngine : null));
+
+    if (EngineClass && data) {
+      this.nlpEngine = new EngineClass();
+      this.nlpEngine.initialize(data);
     }
   }
 
@@ -32,7 +32,7 @@ class FriendlyTerminalAssistant {
             <div class="bot-avatar"><img src="assets/ai-avatar.jpg" alt="Chandy AI" class="bot-avatar-img" /></div>
             <div>
               <div class="bot-name">Chandy's AI Portfolio Assistant</div>
-              <div class="bot-status"><span class="pulse-dot"></span> Online • Powered by Vector Embeddings &amp; Semantic Retrieval</div>
+              <div class="bot-status"><span class="pulse-dot"></span> Online</div>
             </div>
           </div>
           <div class="chat-actions">
@@ -44,17 +44,17 @@ class FriendlyTerminalAssistant {
 
         <div class="chat-input-row">
           <span class="chat-prompt">chandy@ai-assistant:~$</span>
-          <input type="text" id="chat-input" class="chat-input" autocomplete="off" spellcheck="false" placeholder="Ask anything in human language (e.g. 'How strong is he in SQL and PySpark?')..." aria-label="Ask a question in natural language" />
+          <input type="text" id="chat-input" class="chat-input" autocomplete="off" spellcheck="false" placeholder="Type Here " aria-label="Ask a question in natural language" />
         </div>
 
         <div class="chat-quick-suggestions">
           <span class="sugg-label">TRY ASKING IN HUMAN LANGUAGE:</span>
+          <button class="sugg-chip" data-cmd="Tell me shortly about him">👤 Shortly About Him</button>
+          <button class="sugg-chip" data-cmd="What is his total year of experience?">💼 Total Experience</button>
           <button class="sugg-chip" data-cmd="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
-          <button class="sugg-chip" data-cmd="Explain about his project">⚙️ Explain Project</button>
-          <button class="sugg-chip" data-cmd="How about his execution in projects?">🚀 Project Execution</button>
+          <button class="sugg-chip" data-cmd="Explain about his project">⚙️ Flagship Project</button>
           <button class="sugg-chip" data-cmd="What are his main key points?">⭐ Main Key Points</button>
           <button class="sugg-chip" data-cmd="Show me the description of professional experience about Systech Solutions">🏢 Systech Solutions</button>
-          <button class="sugg-chip" data-cmd="Tell me about his full stack development role at SPB Corp">💻 SPB Corp Full Stack</button>
           <button class="sugg-chip" data-cmd="What certifications does Chandrakhanth hold?">🏆 Certifications (DP-700)</button>
           <button class="sugg-chip" data-cmd="How can I contact Chandrakhanth for hire?">📬 Contact &amp; Hire</button>
         </div>
@@ -112,7 +112,6 @@ class FriendlyTerminalAssistant {
     this.printHTML(`
       <div class="chat-bubble bot-bubble">
         <p><strong>Hi there! Welcome to Chandrakhanth's AI Assistant 👋</strong></p>
-        <p>I understand natural human language queries! You don't need rigid terminal commands — simply ask in your own words</p>
       </div>
     `);
   }
@@ -133,8 +132,53 @@ class FriendlyTerminalAssistant {
       const { intent, meta } = this.detectIntent(cmd);
 
       switch (intent) {
+        case 'about_short':
+          this.printShortAbout(meta);
+          break;
+        case 'total_experience':
+          this.printTotalExperience(meta);
+          break;
+        case 'about':
+          this.printAbout(meta);
+          break;
+        case 'current_role':
+          this.printCurrentRole(meta);
+          break;
+        case 'why_hire':
+          this.printWhyHire(meta);
+          break;
         case 'sql_pyspark_strength':
           this.printSQLAndPySparkStrength(meta);
+          break;
+        case 'pyspark':
+          this.printPysparkDeepDive(meta);
+          break;
+        case 'sql':
+          this.printSqlDeepDive(meta);
+          break;
+        case 'fabric':
+          this.printFabricDeepDive(meta);
+          break;
+        case 'airflow':
+          this.printAirflowDeepDive(meta);
+          break;
+        case 'snowflake':
+          this.printSnowflakeDeepDive(meta);
+          break;
+        case 'databricks':
+          this.printDatabricksDeepDive(meta);
+          break;
+        case 'python':
+          this.printPythonDeepDive(meta);
+          break;
+        case 'fullstack':
+          this.printFullStackDeepDive(meta);
+          break;
+        case 'docker':
+          this.printDockerDeepDive(meta);
+          break;
+        case 'azure':
+          this.printAzureDeepDive(meta);
           break;
         case 'project_execution':
           this.printProjectExecution(meta);
@@ -166,23 +210,44 @@ class FriendlyTerminalAssistant {
         case 'architecture':
           this.showArchitecture(meta);
           break;
-        case 'about':
-          this.printAbout(meta);
-          break;
         case 'education':
           this.printEducation(meta);
           break;
         case 'contact':
           this.printContact(meta);
           break;
+        case 'location':
+          this.printLocation(meta);
+          break;
+        case 'linkedin':
+          this.printLinkedIn(meta);
+          break;
+        case 'github':
+          this.printGitHub(meta);
+          break;
         case 'greeting':
           this.printGreetingReply();
+          break;
+        case 'pleasantry':
+          this.printPleasantryReply();
+          break;
+        case 'thanks':
+          this.printThanksReply();
+          break;
+        case 'goodbye':
+          this.printGoodbyeReply();
+          break;
+        case 'bot_identity':
+          this.printBotIdentity();
           break;
         case 'help':
           this.printHelp();
           break;
         case 'clear':
           this.clear();
+          break;
+        case 'context_match':
+          this.printContextMatch(meta);
           break;
         default:
           this.printOutOfScopeError(cmd, meta);
@@ -195,27 +260,28 @@ class FriendlyTerminalAssistant {
   }
 
   detectIntent(text) {
-    const clean = text.toLowerCase().trim();
-
-    if (/^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|sup|howdy)\b/i.test(clean)) {
-      return { intent: 'greeting', meta: null };
-    }
-    if (/help|what\s*can\s*(you|i)\s*(do|ask)|menu|options|commands/i.test(clean)) {
-      return { intent: 'help', meta: null };
-    }
-    if (clean === 'clear' || clean === 'cls') {
-      return { intent: 'clear', meta: null };
-    }
-
     if (this.nlpEngine) {
-      const searchRes = this.nlpEngine.search(clean, 0.15);
-      if (!searchRes.isOutOfScope && searchRes.topMatch) {
-        return { intent: searchRes.topMatch.chunkId, meta: searchRes };
+      const searchRes = this.nlpEngine.search(text, 0.12);
+      if (!searchRes.isOutOfScope && searchRes.intent) {
+        return { intent: searchRes.intent, meta: searchRes };
       }
-      
-      return { intent: 'out_of_scope', meta: searchRes };
     }
 
+    // Direct fallback rule matcher if engine was uninitialized
+    const clean = text.toLowerCase().trim();
+    if (
+      /tell\s+me\s+(shortly|briefly|short|quick)|short\s+(summary|bio|overview)|who\s+is\s+(he|chandrakhanth)|tell\s+me\s+about\s+him/i.test(clean) ||
+      /^about\s+him$/i.test(clean)
+    ) {
+      return { intent: 'about_short', meta: null };
+    }
+    if (
+      /(total|overall|how\s+many|number\s+of)?\s*(year|years|yoe)\s+(of\s+)?experience/i.test(clean) ||
+      /how\s+(much|long)\s+experience/i.test(clean) ||
+      /experience\s+(in\s+years|duration|timeline|years)/i.test(clean)
+    ) {
+      return { intent: 'total_experience', meta: null };
+    }
     if (/sql/i.test(clean) && /pyspark|spark/i.test(clean)) return { intent: 'sql_pyspark_strength', meta: null };
     if (/execution|delivery|sla/i.test(clean)) return { intent: 'project_execution', meta: null };
     if (/key\s*point|highlights|strengths|manifesto/i.test(clean)) return { intent: 'key_points', meta: null };
@@ -223,16 +289,486 @@ class FriendlyTerminalAssistant {
     if (/systech/i.test(clean)) return { intent: 'systech', meta: null };
     if (/spb/i.test(clean)) return { intent: 'spb', meta: null };
     if (/iit|madras/i.test(clean)) return { intent: 'iit', meta: null };
-    if (/certif/i.test(clean)) return { intent: 'certifications', meta: null };
-    if (/skill/i.test(clean)) return { intent: 'skills', meta: null };
+    if (/certif|dp-?700/i.test(clean)) return { intent: 'certifications', meta: null };
+    if (/skills?|stack|technolog/i.test(clean)) return { intent: 'skills', meta: null };
     if (/architect|pipeline/i.test(clean)) return { intent: 'architecture', meta: null };
     if (/contact|email|hire/i.test(clean)) return { intent: 'contact', meta: null };
+    if (/education|college|university|degree/i.test(clean)) return { intent: 'education', meta: null };
+    if (/where\s+does\s+he\s+live|location|remote/i.test(clean)) return { intent: 'location', meta: null };
+    if (/why\s+hire/i.test(clean)) return { intent: 'why_hire', meta: null };
 
     return { intent: 'out_of_scope', meta: null };
   }
 
   renderNLPInspector(meta) {
     return '';
+  }
+
+  // 1. Short Bio / About Him (Solves "tell me shortly about him")
+  printShortAbout(meta) {
+    const p = PORTFOLIO_DATA.profile;
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>⚡ Quick Snapshot: Chandrakhanth K (Chandy)</strong></p>
+        <p class="text-secondary text-sm mt-05">
+          <strong>${p.title}</strong> at <em>${p.company}</em> in Chennai, India with <strong>~2+ Years</strong> of production software and data engineering experience delivering high-throughput lakehouse platforms.
+        </p>
+
+        <div class="chat-stat-grid mt-1">
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">2+ Years</div>
+            <div class="chat-stat-lbl">Production Software &amp; Data Engineering</div>
+          </div>
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">DP-700</div>
+            <div class="chat-stat-lbl">Microsoft Fabric Certified Analytics Eng</div>
+          </div>
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">90% SLA</div>
+            <div class="chat-stat-lbl">Airflow Daily Orchestration (100+ DAGs)</div>
+          </div>
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">100M+</div>
+            <div class="chat-stat-lbl">Daily Distributed Records Processed</div>
+          </div>
+        </div>
+
+        <div class="keypoint-item mt-1">
+          <strong>🎯 Core Technical Highlights:</strong>
+          <ul class="chat-list text-xs mt-05">
+            <li><strong>Cloud Lakehouses:</strong> Microsoft Fabric OneLake, Snowflake star schemas, and Databricks Delta Lake.</li>
+            <li><strong>Distributed Compute &amp; SQL:</strong> Advanced PySpark DataFrame transformations and MS SQL Server query optimization (T-SQL, indexing, stored procedures).</li>
+            <li><strong>Production Ownership:</strong> Lead owner of Apache Airflow retail pipelines, cutting incident triage times by 65%.</li>
+            <li><strong>Full-Stack Foundation:</strong> B.Tech in IT (Anna University) with full-stack background (Python, FastAPI, React, RESTful APIs).</li>
+          </ul>
+        </div>
+
+        ${this.renderNLPInspector(meta)}
+
+        <div class="journey-actions mt-1">
+          <span class="text-xs text-muted">Explore further:</span>
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience</button>
+            <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
+            <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Flagship Project</button>
+            <button class="sugg-chip click-to-ask" data-query="How can I contact Chandrakhanth for hire?">📬 Contact &amp; Hire</button>
+          </div>
+        </div>
+      </div>
+    `);
+
+    this.bindClickToAsk();
+  }
+
+  // 2. Total Experience (Solves "total year of experience")
+  printTotalExperience(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>💼 Chandrakhanth's Total Experience: ~2+ Years</strong></p>
+        <p class="text-secondary text-sm mt-05">
+          Chandrakhanth has <strong>~2+ years</strong> of continuous, progressive engineering experience delivering production data platforms, workflow orchestration, and full-stack software applications:
+        </p>
+
+        <div class="chat-stat-grid mt-1">
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">2+ Years</div>
+            <div class="chat-stat-lbl">Total Professional Experience</div>
+          </div>
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">3 Roles</div>
+            <div class="chat-stat-lbl">Systech Solutions • SPB Corp • IIT Madras</div>
+          </div>
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">100M+</div>
+            <div class="chat-stat-lbl">Daily Distributed Records Handled</div>
+          </div>
+          <div class="chat-stat-item">
+            <div class="chat-stat-val">90%</div>
+            <div class="chat-stat-lbl">Production SLA Maintained</div>
+          </div>
+        </div>
+
+        <div class="journey-chat-list mt-1">
+          <div class="journey-chat-item">
+            <span class="pill-year">06/2025 — PRESENT</span>
+            <strong>Data Engineer</strong> at <em>Systech Solutions, Inc.</em> (Chennai, India)
+            <div class="text-secondary text-xs mt-05">Primary owner of daily Apache Airflow DAG orchestration, Databricks PySpark distributed transformations, Microsoft Fabric (DP-700) Lakehouse, and Snowflake data marts with 90% SLA adherence.</div>
+          </div>
+          <div class="journey-chat-item">
+            <span class="pill-year">10/2024 — 04/2025 (7 Mos)</span>
+            <strong>Software Engineer</strong> at <em>SPB CORP LTD</em> (United Kingdom Remote)
+            <div class="text-secondary text-xs mt-05">Engineered full-stack web applications, Python (FastAPI/Django) microservices, React UIs, and MS SQL Server query optimization (reducing response times by 45%).</div>
+          </div>
+          <div class="journey-chat-item">
+            <span class="pill-year">06/2024 — 08/2024 (3 Mos)</span>
+            <strong>Software Engineer</strong> at <em>IIT Madras</em> (Chennai, India)
+            <div class="text-secondary text-xs mt-05">Developed interactive computational web dashboards, Python (Flask/FastAPI), PostgreSQL relational schemas, and distributed batch parsing routines.</div>
+          </div>
+          <div class="journey-chat-item">
+            <span class="pill-year">2020 — 2024</span>
+            <strong>B.Tech in Information Technology</strong> at <em>Anna University</em>
+            <div class="text-secondary text-xs mt-05">Solid academic foundation in distributed systems, database management, and data structures.</div>
+          </div>
+        </div>
+
+        ${this.renderNLPInspector(meta)}
+
+        <div class="journey-actions mt-1">
+          <span class="text-xs text-muted">Inspect specific company:</span>
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="Show me the description of professional experience about Systech Solutions">🏢 Systech Deep Dive</button>
+            <button class="sugg-chip click-to-ask" data-query="Tell me about his full stack development role at SPB Corp">💻 SPB Corp Role</button>
+            <button class="sugg-chip click-to-ask" data-query="What did he do as a Software Engineer at IIT Madras?">🎓 IIT Madras Role</button>
+            <button class="sugg-chip click-to-ask" data-query="What certifications does Chandrakhanth hold?">🏆 Certifications</button>
+          </div>
+        </div>
+      </div>
+    `);
+
+    this.bindClickToAsk();
+  }
+
+  // 3. Current Role
+  printCurrentRole(meta) {
+    const p = PORTFOLIO_DATA.profile;
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🏢 Current Role: Data Engineer</strong></p>
+        <p class="text-secondary text-sm mt-05">
+          Chandrakhanth currently works as a <strong>Data Engineer</strong> at <em>${p.company}</em> in Chennai, India.
+        </p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Workflow Orchestration:</strong> Lead supervisor of daily Apache Airflow DAG executions, maintaining a 90% SLA adherence across 24+ retail pipelines.</li>
+          <li><strong>Lakehouse Engineering:</strong> Building Microsoft Fabric (DP-700 Certified) OneLake pipelines and Databricks PySpark transformation clusters.</li>
+          <li><strong>Warehouse Marts:</strong> Designing and tuning dimensional star schemas across Snowflake and MS SQL Server.</li>
+        </ul>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="Show me the description of professional experience about Systech Solutions">🏢 Systech Full Details</button>
+            <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Flagship Project</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  // 4. Why Hire
+  printWhyHire(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>⭐ Why Hire Chandrakhanth K?</strong></p>
+        <p class="text-secondary text-sm mt-05">Here is what sets Chandrakhanth apart as an exceptional Data Engineering candidate:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Triple-Certified Production Rigor:</strong> Certified in Microsoft Fabric (DP-700), Astronomer Airflow DAG Authoring, and Databricks Data Engineer Associate.</li>
+          <li><strong>Proven SLA Ownership:</strong> Successfully manages 100+ daily production DAG runs with a 90% SLA adherence record, reducing incident triage times by 65%.</li>
+          <li><strong>Deep SQL &amp; PySpark Strength:</strong> Fluent in both relational query profiling (T-SQL, stored procedures, indexing) and large-scale distributed compute handling 100M+ daily records.</li>
+          <li><strong>Full-Stack Software Engineering Foundation:</strong> Brings rare full-stack versatility (React, FastAPI, Docker, REST APIs) allowing him to bridge data pipelines with business applications.</li>
+        </ul>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="How can I contact Chandrakhanth for hire?">📬 Contact For Interview</button>
+            <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  // 5. Tech Deep Dives
+  printPysparkDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🔥 PySpark &amp; Distributed Processing Expertise:</strong></p>
+        <p class="text-secondary text-sm mt-05">Certified Databricks Associate with extensive production experience running distributed Spark compute:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Scale:</strong> Processes and cleanses 100M+ daily distributed records across retail POS and inventory feeds.</li>
+          <li><strong>DataFrame APIs &amp; Spark SQL:</strong> Authors optimized transformations, deduplication algorithms, and schema validation checks.</li>
+          <li><strong>Delta Lake:</strong> Manages ACID transactions, time-travel querying, and Bronze-to-Silver curation in Databricks and Microsoft Fabric.</li>
+        </ul>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
+            <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Flagship Project</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  printSqlDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🗄️ MS SQL Server &amp; Relational Engineering:</strong></p>
+        <p class="text-secondary text-sm mt-05">Chandrakhanth has advanced proficiency (93%) in MS SQL Server and analytical SQL dialects:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>T-SQL Mastery:</strong> Authored high-complexity stored procedures, recursive CTEs, and window functions (<code>ROW_NUMBER()</code>, <code>LEAD()</code>/<code>LAG()</code>, <code>RANK()</code>).</li>
+          <li><strong>Performance Profiling:</strong> Analyzed execution plans, missing index recommendations, and lock contention to accelerate batch cycles and API response times by 40–45%.</li>
+          <li><strong>Dimensional Modeling:</strong> Designed production Star Schema and Snowflake Schema fact and dimension tables with slowly changing dimensions (SCD).</li>
+        </ul>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
+            <button class="sugg-chip click-to-ask" data-query="Show me the description of professional experience about Systech Solutions">🏢 Systech Role</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  printFabricDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>⚡ Microsoft Fabric Experience (DP-700 Certified):</strong></p>
+        <p class="text-secondary text-sm mt-05">Officially certified <strong>Microsoft Fabric Analytics Engineer (DP-700)</strong> (2026):</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>OneLake &amp; Lakehouse:</strong> Built end-to-end lakehouses using Fabric Spark and Delta Lake tables.</li>
+          <li><strong>Direct Lake Mode:</strong> Connected semantic models directly to OneLake Delta tables for instant Power BI reporting without import refreshes.</li>
+          <li><strong>Data Factory in Fabric:</strong> Scheduled multi-source ingestion pipelines across disparate retail feeds.</li>
+        </ul>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="What certifications does Chandrakhanth hold?">🏆 Certifications</button>
+            <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Flagship Project</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  printAirflowDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🌬️ Apache Airflow Orchestration Expertise:</strong></p>
+        <p class="text-secondary text-sm mt-05">Astronomer Certified in <strong>DAG Authoring</strong> and <strong>Airflow Fundamentals</strong>:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Production Scale:</strong> Supervises 100+ daily production runs across 24+ retail DAGs at Systech Solutions.</li>
+          <li><strong>Custom Architecture:</strong> Authors custom Python operators, sensors, dynamic task dependencies, and automated retry logic.</li>
+          <li><strong>SLA &amp; Triage:</strong> Achieved 90% SLA adherence and 65% faster incident triage by inspecting XComs, execution logs, and metadata.</li>
+        </ul>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="How about his execution in projects?">🚀 Project Execution</button>
+            <button class="sugg-chip click-to-ask" data-query="Show me the description of professional experience about Systech Solutions">🏢 Systech Role</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  printSnowflakeDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>❄️ Snowflake Cloud Data Warehouse Expertise:</strong></p>
+        <p class="text-secondary text-sm mt-05">Proficient in Snowflake data modeling and virtual warehouse query management (92%):</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Warehouse Architecture:</strong> Configured virtual warehouses, clustering keys, and SnowSQL scripts.</li>
+          <li><strong>Data Marts:</strong> Curated high-performance analytical star schemas for executive retail reporting.</li>
+          <li><strong>Features:</strong> Leveraged Time Travel, Zero-Copy Cloning, and partitioned staging zones.</li>
+        </ul>
+      </div>
+    `);
+  }
+
+  printDatabricksDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🧱 Databricks &amp; Delta Lake Expertise:</strong></p>
+        <p class="text-secondary text-sm mt-05">Certified <strong>Databricks Data Engineer Associate</strong> (2026–2028):</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Cluster &amp; Job Management:</strong> Configured automated compute jobs and optimized Spark execution memory.</li>
+          <li><strong>Delta Lake:</strong> Implemented schema enforcement, schema evolution, and ACID compliance across Bronze and Silver layers.</li>
+        </ul>
+      </div>
+    `);
+  }
+
+  printPythonDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🐍 Python &amp; Backend Engineering:</strong></p>
+        <p class="text-secondary text-sm mt-05">Proficient in Python for both high-throughput data engineering and web backend architectures:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Data Engineering:</strong> PySpark DataFrame scripts, Pandas ETL routines, automated data validation, and REST API ingestors.</li>
+          <li><strong>Web Frameworks:</strong> Built RESTful microservices and asynchronous backend APIs using FastAPI, Django, and Flask at SPB Corp and IIT Madras.</li>
+        </ul>
+      </div>
+    `);
+  }
+
+  printFullStackDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>💻 Full-Stack Web Development Foundation:</strong></p>
+        <p class="text-secondary text-sm mt-05">Chandrakhanth brings hands-on full-stack development experience from SPB Corp and IIT Madras:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Frontend:</strong> React, JavaScript, HTML5, CSS3, dynamic data-binding, and client-side state management.</li>
+          <li><strong>Backend:</strong> Python (FastAPI/Django/Flask), RESTful APIs, JSON serialization, and Docker containerization.</li>
+          <li><strong>Databases:</strong> MS SQL Server and PostgreSQL relational schema modeling.</li>
+        </ul>
+      </div>
+    `);
+  }
+
+  printDockerDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🐳 Docker &amp; Containerization:</strong></p>
+        <p class="text-secondary text-sm mt-05">Hands-on experience with Docker for reproducible local development and service isolation:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li>Containerized local full-stack development environments at SPB CORP LTD.</li>
+          <li>Automated build testing workflows and streamlined deployment consistency with CI/CD scripts.</li>
+        </ul>
+      </div>
+    `);
+  }
+
+  printAzureDeepDive(meta) {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>☁️ Microsoft Azure &amp; Azure Data Factory (ADF):</strong></p>
+        <p class="text-secondary text-sm mt-05">Advanced proficiency (90%) across Microsoft Azure cloud data services:</p>
+        <ul class="chat-list text-xs mt-05">
+          <li><strong>Azure Data Factory (ADF):</strong> Built 12+ scheduled copy-data pipelines with tumbling triggers and linked services.</li>
+          <li><strong>Azure Storage:</strong> ADLS Gen2 hierarchical storage, Azure Blob stores, and Azure Key Vault credential management.</li>
+        </ul>
+      </div>
+    `);
+  }
+
+  printLocation(meta) {
+    const p = PORTFOLIO_DATA.profile;
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>📍 Location &amp; Work Preferences:</strong></p>
+        <p class="mt-05">Chandrakhanth is based in <strong>${p.location}</strong>.</p>
+        <p class="text-secondary text-sm mt-05">He is open to high-impact <strong>Full-Time, Remote, Hybrid, or On-site</strong> Data Engineering opportunities.</p>
+        <div class="journey-actions mt-1">
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="How can I contact Chandrakhanth for hire?">📬 Contact &amp; Connect</button>
+          </div>
+        </div>
+      </div>
+    `);
+    this.bindClickToAsk();
+  }
+
+  printLinkedIn(meta) {
+    const p = PORTFOLIO_DATA.profile;
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🔗 LinkedIn Profile:</strong></p>
+        <p class="mt-05">Connect with Chandrakhanth on LinkedIn: <a href="${p.linkedin}" target="_blank" class="chat-link">${p.linkedin}</a></p>
+      </div>
+    `);
+  }
+
+  printGitHub(meta) {
+    const p = PORTFOLIO_DATA.profile;
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>⚡ GitHub Profile:</strong></p>
+        <p class="mt-05">Explore his open-source code and project repositories: <a href="${p.github}" target="_blank" class="chat-link">${p.github}</a></p>
+      </div>
+    `);
+  }
+
+  printPleasantryReply() {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p>I'm doing fantastic, thank you for asking! 😊</p>
+        <p class="mt-05">I'm here and ready to help you explore Chandrakhanth's data engineering experience, projects, or certifications. What would you like to know?</p>
+      </div>
+    `);
+  }
+
+  printThanksReply() {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p>You're very welcome! Glad I could help. 🙌</p>
+        <p class="mt-05">Feel free to ask any other questions about Chandrakhanth's background, or reach out to him directly to connect!</p>
+      </div>
+    `);
+  }
+
+  printGoodbyeReply() {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p>Goodbye! Thank you for visiting Chandrakhanth's portfolio 👋</p>
+        <p class="mt-05">Have a wonderful day ahead!</p>
+      </div>
+    `);
+  }
+
+  printBotIdentity() {
+    this.printHTML(`
+      <div class="chat-bubble bot-bubble">
+        <p><strong>🤖 About Me:</strong></p>
+        <p class="mt-05">I am Chandrakhanth's interactive <strong>AI Portfolio Assistant</strong>! I run locally in your browser using natural language intent processing and vector embeddings.</p>
+        <p class="text-secondary text-sm mt-05">My goal is to help recruiters, hiring managers, and engineers seamlessly explore Chandrakhanth's background, technical stack, certifications, and project deliveries.</p>
+      </div>
+    `);
+  }
+
+  printContextMatch(meta) {
+    const entity = meta && meta.contextEntity ? meta.contextEntity : null;
+    if (!entity) {
+      this.printSkills(meta);
+      return;
+    }
+
+    if (entity.type === 'skill' || entity.type === 'skill_tag') {
+      this.printHTML(`
+        <div class="chat-bubble bot-bubble">
+          <p><strong>⚡ Technical Skill: ${this.escapeHTML(entity.title)}</strong></p>
+          <div class="strength-card-chat mt-05">
+            <div class="strength-header">
+              <strong>${this.escapeHTML(entity.category || 'Skill')}</strong>
+              <span class="strength-pct">${entity.level || 85}% Proficiency</span>
+            </div>
+            ${entity.tags && entity.tags.length ? `
+              <div class="company-skills-tags mt-05">
+                <span class="text-xs text-muted">Related Tags:</span>
+                ${entity.tags.map(t => `<span class="tech-tag">${this.escapeHTML(t)}</span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+          <p class="text-xs text-secondary mt-05">Chandrakhanth uses ${this.escapeHTML(entity.title)} in production data engineering pipelines and full-stack software development.</p>
+          <div class="journey-actions mt-1">
+            <div class="error-chip-row mt-05">
+              <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
+              <button class="sugg-chip click-to-ask" data-query="What are his skills?">⚡ All Skills</button>
+            </div>
+          </div>
+        </div>
+      `);
+    } else if (entity.type === 'experience_fact') {
+      this.printHTML(`
+        <div class="chat-bubble bot-bubble company-detail-bubble">
+          <div class="chat-company-header">
+            <span class="company-icon">🏢</span>
+            <div>
+              <div class="company-title"><strong>${this.escapeHTML(entity.company)}</strong></div>
+              <div class="company-role-meta"><span class="pill-year">${this.escapeHTML(entity.period)}</span> <strong>${this.escapeHTML(entity.role)}</strong></div>
+            </div>
+          </div>
+          <p class="mt-1 text-sm"><em>"${this.escapeHTML(entity.snippet)}"</em></p>
+          <div class="journey-actions mt-1">
+            <div class="error-chip-row mt-05">
+              <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience</button>
+            </div>
+          </div>
+        </div>
+      `);
+    } else {
+      this.printSkills(meta);
+    }
+    this.bindClickToAsk();
   }
 
   printSQLAndPySparkStrength(meta) {
@@ -274,7 +810,7 @@ class FriendlyTerminalAssistant {
           <div class="error-chip-row mt-05">
             <button class="sugg-chip click-to-ask" data-query="How about his execution in projects?">🚀 Project Execution</button>
             <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Explain His Project</button>
-            <button class="sugg-chip click-to-ask" data-query="What are his main key points?">⭐ Main Key Points</button>
+            <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience</button>
           </div>
         </div>
       </div>
@@ -335,7 +871,7 @@ class FriendlyTerminalAssistant {
           <div class="error-chip-row mt-05">
             <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Explain His Project</button>
             <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
-            <button class="sugg-chip click-to-ask" data-query="What are his main key points?">⭐ Main Key Points</button>
+            <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience</button>
           </div>
         </div>
       </div>
@@ -385,7 +921,7 @@ class FriendlyTerminalAssistant {
           <span class="text-xs text-muted">Explore further:</span>
           <div class="error-chip-row mt-05">
             <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
-            <button class="sugg-chip click-to-ask" data-query="How about his execution in projects?">🚀 Project Execution</button>
+            <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience</button>
             <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Explain His Project</button>
           </div>
         </div>
@@ -617,12 +1153,20 @@ class FriendlyTerminalAssistant {
         <p><strong>⚡ Core Technical Competencies &amp; Stack:</strong></p>
         <ul class="chat-list mt-1">
           <li><strong>Primary Skills &amp; Core Foundations:</strong> Python, SQL (Advanced &amp; T-SQL), PySpark, Data Modeling (Star/Snowflake Schema), Source System Analysis (SSA), DAX &amp; Power Query.</li>
-          <li><strong>Familiar Tools &amp; Technologies:</strong> Snowflake, Databricks &amp; Delta Lake, Microsoft Fabric (DP-700 Certified), Apache Airflow (Astronomer Certified), Azure Data Factory (ADF), MS SQL Server, Greenplum Database, Power BI, Microsoft Azure, Git, Linux / Bash.</li>
+          <li><strong>Familiar Tools &amp; Technologies:</strong> Snowflake, Databricks &amp; Delta Lake, Microsoft Fabric (DP-700 Certified), Apache Airflow (Astronomer Certified), Azure Data Factory (ADF), MS SQL Server, Greenplum Database, Power BI, Microsoft Azure, Docker, Git, Linux / Bash.</li>
         </ul>
         ${this.renderNLPInspector(meta)}
-        <p class="text-xs text-muted mt-1"><em>Tip: You can also ask "How strong is he in SQL and PySpark?" for a deep dive!</em></p>
+        <div class="journey-actions mt-1">
+          <span class="text-xs text-muted">Deep dive into specific skills:</span>
+          <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
+            <button class="sugg-chip click-to-ask" data-query="What is his experience in Microsoft Fabric?">⚡ Microsoft Fabric (DP-700)</button>
+            <button class="sugg-chip click-to-ask" data-query="How does he use Apache Airflow?">🌬️ Apache Airflow</button>
+          </div>
+        </div>
       </div>
     `);
+    this.bindClickToAsk();
   }
 
   showArchitecture(meta) {
@@ -656,7 +1200,8 @@ class FriendlyTerminalAssistant {
         <p>${p.bio}</p>
         <div class="assistant-fact-list mt-1">
           <div>🏢 <strong>Current Role:</strong> Data Engineer at <em>${p.company}</em></div>
-          <div>🎓 <strong>Education:</strong> B.Tech in Information Technology (2020–2024)</div>
+          <div>💼 <strong>Total Experience:</strong> ${p.experienceYears || '2+ Years'} (Systech Solutions, SPB Corp, IIT Madras)</div>
+          <div>🎓 <strong>Education:</strong> B.Tech in Information Technology (Anna University, 2020–2024)</div>
           <div>🏆 <strong>Certifications:</strong> Microsoft Fabric DP-700, Astronomer Airflow DAG Authoring &amp; Databricks Associate</div>
           <div>📍 <strong>Location:</strong> ${p.location}</div>
         </div>
@@ -687,6 +1232,7 @@ class FriendlyTerminalAssistant {
           <div>📧 Email: <a href="mailto:${p.email}" class="chat-link">${p.email}</a></div>
           <div>🔗 LinkedIn: <a href="${p.linkedin}" target="_blank" class="chat-link">linkedin.com/in/chandrakhanth</a></div>
           <div>⚡ GitHub: <a href="${p.github}" target="_blank" class="chat-link">github.com/chandrakhanth</a></div>
+          <div>📍 Location: ${p.location}</div>
         </div>
         ${this.renderNLPInspector(meta)}
         <p class="mt-1"><a href="#contact" class="chat-link">→ Fill out the direct Contact Form below</a></p>
@@ -698,7 +1244,7 @@ class FriendlyTerminalAssistant {
     this.printHTML(`
       <div class="chat-bubble bot-bubble">
         <p>Hello! 👋 I'm here and ready to help you explore Chandrakhanth's background.</p>
-        <p class="mt-1">You can ask me questions like <em>"How strong is he in SQL and PySpark?"</em>, <em>"Explain about his project"</em>, or <em>"What are his main key points?"</em></p>
+        <p class="mt-1">You can ask me questions like <em>"Tell me shortly about him"</em>, <em>"What is his total year of experience?"</em>, or <em>"How strong is he in SQL and PySpark?"</em></p>
       </div>
     `);
   }
@@ -708,14 +1254,16 @@ class FriendlyTerminalAssistant {
       <div class="chat-bubble bot-bubble">
         <p><strong>💡 You can ask anything in natural human language, such as:</strong></p>
         <ul class="chat-list mt-1 text-sm">
+          <li><em>"Tell me shortly about him"</em></li>
+          <li><em>"What is his total year of experience?"</em></li>
           <li><em>"How strong is he in SQL and PySpark?"</em></li>
-          <li><em>"Explain about his project"</em></li>
-          <li><em>"How about his execution in projects?"</em></li>
+          <li><em>"Explain about his flagship project"</em></li>
+          <li><em>"How about his execution in projects and SLA?"</em></li>
           <li><em>"What are his main key points?"</em></li>
           <li><em>"Show me the description of professional experience about Systech Solutions"</em></li>
           <li><em>"Tell me about SPB Corp"</em> or <em>"What did he do at IIT Madras?"</em></li>
           <li><em>"What certifications does Chandrakhanth hold?"</em></li>
-          <li><em>"How do I contact him?"</em></li>
+          <li><em>"How can I contact him for hire?"</em></li>
         </ul>
       </div>
     `);
@@ -723,35 +1271,18 @@ class FriendlyTerminalAssistant {
 
   printOutOfScopeError(rawCmd, meta) {
     this.printHTML(`
-      <div class="chat-bubble bot-bubble out-of-scope-error">
-        <div class="error-header">
-          <span class="error-badge">⚠️ OUT OF SCOPE QUERY [ERROR 404]</span>
-        </div>
-        <p class="error-message mt-05">
-          The query <code class="error-query">"${this.escapeHTML(rawCmd)}"</code> is outside my verified portfolio knowledge base.
+      <div class="chat-bubble bot-bubble">
+        <p><strong>👋 I'm focused on Chandrakhanth's Engineering Background &amp; Portfolio!</strong></p>
+        <p class="text-secondary text-sm mt-05">
+          I'm dedicated to helping you explore Chandrakhanth's verified experience, data architecture, certifications, and technical stack.
         </p>
-        <p class="error-desc text-secondary text-sm mt-05">
-          I am Chandrakhanth's dedicated AI Portfolio Assistant. My knowledge engine is strictly restricted to Chandrakhanth's verified professional experience, skills, certifications, and projects.
-        </p>
-        <div class="error-allowed-box mt-1">
-          <div class="text-xs font-semibold text-muted">TOPICS I CAN ANSWER:</div>
-          <ul class="chat-list text-xs mt-05">
-            <li><strong>SQL &amp; PySpark Strength:</strong> Advanced MS SQL Server, PySpark Distributed Compute, Delta Lake</li>
-            <li><strong>Projects &amp; Execution:</strong> Flagship Enterprise Orchestration Platform, 90% SLA, 65% faster triage</li>
-            <li><strong>Experience:</strong> Systech Solutions (Data Engineer), SPB Corp, IIT Madras</li>
-            <li><strong>Certifications:</strong> Microsoft Fabric DP-700, Astronomer Airflow DAG Authoring, Databricks Associate</li>
-          </ul>
-        </div>
-
-        ${this.renderNLPInspector(meta)}
-
         <div class="error-suggestions mt-1">
-          <span class="text-xs text-muted">💡 Try asking in human language:</span>
+          <span class="text-xs text-muted">💡 Try asking one of these popular questions:</span>
           <div class="error-chip-row mt-05">
+            <button class="sugg-chip click-to-ask" data-query="Tell me shortly about him">👤 Shortly About Him</button>
+            <button class="sugg-chip click-to-ask" data-query="What is his total year of experience?">💼 Total Experience (2+ Yrs)</button>
             <button class="sugg-chip click-to-ask" data-query="How strong is he in SQL and PySpark?">📊 SQL &amp; PySpark Strength</button>
-            <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Explain Project</button>
-            <button class="sugg-chip click-to-ask" data-query="How about his execution in projects?">🚀 Project Execution</button>
-            <button class="sugg-chip click-to-ask" data-query="What are his main key points?">⭐ Main Key Points</button>
+            <button class="sugg-chip click-to-ask" data-query="Explain about his project">⚙️ Flagship Project</button>
           </div>
         </div>
       </div>
@@ -795,7 +1326,7 @@ class FriendlyTerminalAssistant {
   }
 
   escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, tag => ({
+    return String(str).replace(/[&<>'"]/g, tag => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
@@ -805,6 +1336,12 @@ class FriendlyTerminalAssistant {
   }
 }
 
-window.initInteractiveTerminal = function (containerId = 'interactive-terminal-container') {
-  return new FriendlyTerminalAssistant(containerId);
-};
+if (typeof window !== 'undefined') {
+  window.initInteractiveTerminal = function (containerId = 'interactive-terminal-container') {
+    return new FriendlyTerminalAssistant(containerId);
+  };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = FriendlyTerminalAssistant;
+}
